@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
-RootDir = "D:\\vision5"
+RootDir = r"C:\Users\papho\OneDrive\Desktop\vision5"
 
 RGBDir = RootDir + "\\RGB"
 DepthDir = RootDir + "\\Depth"
