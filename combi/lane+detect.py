@@ -16,36 +16,6 @@ model = YOLO("best.pt")
 
 classNames = ["Go","Pole","Stop","Yield"]
 
-
-def perspective_transform(img):
-
-        origin_points = np.float32([[140, 450], [1140, 450], [50, 700], [1230, 700]])
-        target_points = np.float32([[0, 0], [350, 0], [0, 400], [350, 400]])
-        M1 = cv2.getPerspectiveTransform(origin_points, target_points)
-        alpha = 1.0 
-        smoothed_frame = None
-        
-        res = cv2.warpPerspective(img, M1, (350, 500))
-        #set range of Red
-        lowerHSV = [150,25,75]
-        upperHSV = [200,255,255]
-        
-        lowerHSV1 = [140, 25, 75] 
-        upperHSV1 = [150, 255, 255] 
-        
-        lowerHSV2 = [6, 25, 75] 
-        upperHSV2 = [10, 255, 255] 
-        
-        cols,rows,ch = res.shape
-        
-        hsv = cv2.cvtColor(res,cv2.COLOR_BGR2HSV)
-        mask = cv2.inRange(hsv,np.array(lowerHSV),np.array(upperHSV))
-        mask1 = cv2.inRange(hsv,np.array(lowerHSV1),np.array(upperHSV1))
-        mask2 = cv2.inRange(hsv,np.array(lowerHSV2),np.array(upperHSV2))
-        maskall = mask + mask1 + mask2
-        smooth_mask = cv2.medianBlur(maskall, 5)
-        return smooth_mask
-        
 def region_of_interest(img, vertices):
     mask = np.zeros_like(img)
     #channel_count = img.shape[2]
@@ -109,7 +79,7 @@ def draw_the_lines(img, lines):
     img = cv2.addWeighted(img, 0.8, blank_image, 1, 0.0)
     return img
 
-def anglelinesfil(lines, min_angle=30, max_angle=150):
+def filter_lines_by_angle(lines, min_angle=30, max_angle=90):
     if lines is None:
         return None
     filtered_lines = []
@@ -156,14 +126,14 @@ def process(image):
     lines = cv2.HoughLinesP(
         cropped_image,
         rho=1,
-        theta=np.pi / 180,
-        threshold=50,
+        theta=np.pi / 90,
+        threshold=70,
         lines=np.array([]),
-        minLineLength=10,
+        minLineLength=20,
         maxLineGap=200
     )
     
-    filtered_lines = anglelinesfil(lines)
+    filtered_lines = filter_lines_by_angle(lines)
     image_with_lines = draw_the_lines(image, filtered_lines)
     
     return image_with_lines
@@ -178,12 +148,9 @@ while True:
     depth_image = np.asanyarray(depth_frame.get_data())
     rgb_image = np.asanyarray(color_frame.get_data())
 
-    lane_results = perspective_transform(rgb_image)
-    cv2.imshow("top-view",lane_results)
-    
     depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.5), cv2.COLORMAP_JET)
     results = model(rgb_image, stream=True, conf=0.80)
-    
+
     #lane detection
     rgb_image = process(rgb_image)
 
