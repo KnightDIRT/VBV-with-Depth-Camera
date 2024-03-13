@@ -3,7 +3,6 @@ import cv2
 import math 
 import pyrealsense2 as rs
 import numpy as np
-import torch 
 
 pipeline = rs.pipeline()
 config = rs.config()
@@ -22,8 +21,6 @@ def perspective_transform(img):
         origin_points = np.float32([[140, 450], [1140, 450], [50, 700], [1230, 700]])
         target_points = np.float32([[0, 0], [350, 0], [0, 400], [350, 400]])
         M1 = cv2.getPerspectiveTransform(origin_points, target_points)
-        alpha = 1.0 
-        smoothed_frame = None
         
         res = cv2.warpPerspective(img, M1, (350, 500))
         #set range of Red
@@ -35,8 +32,6 @@ def perspective_transform(img):
         
         lowerHSV2 = [6, 25, 75] 
         upperHSV2 = [10, 255, 255] 
-        
-        cols,rows,ch = res.shape
         
         hsv = cv2.cvtColor(res,cv2.COLOR_BGR2HSV)
         mask = cv2.inRange(hsv,np.array(lowerHSV),np.array(upperHSV))
@@ -170,7 +165,6 @@ def process(image):
 
 
 while True:
-
     frames = pipeline.wait_for_frames()
     depth_frame = frames.get_depth_frame()
     color_frame = frames.get_color_frame()
@@ -181,7 +175,7 @@ while True:
     lane_results = perspective_transform(rgb_image)
     cv2.imshow("top-view",lane_results)
     
-    depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.5), cv2.COLORMAP_JET)
+    #depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.5), cv2.COLORMAP_JET)
     results = model(rgb_image, stream=True, conf=0.80)
     
     #lane detection
@@ -229,4 +223,3 @@ while True:
 
 pipeline.stop()
 cv2.destroyAllWindows()
-
