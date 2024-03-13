@@ -26,7 +26,7 @@ def perspective_transform(img):
         smoothed_frame = None
         
         res = cv2.warpPerspective(img, M1, (350, 500))
-        #set range of Red
+      
         lowerHSV = [150,25,75]
         upperHSV = [200,255,255]
         
@@ -94,12 +94,11 @@ def merge_similar_lines(lines, delta_slope=0.1, delta_intercept=50):
     
     return merged_lines
 
-# Now modify the draw_the_lines function to use this merging function:
 def draw_the_lines(img, lines):
     img = np.copy(img)
     blank_image = np.zeros((img.shape[0], img.shape[1], 3), dtype=np.uint8)
 
-    merged_lines = merge_similar_lines(lines)  # Use the merge function here
+    merged_lines = merge_similar_lines(lines)
 
     if merged_lines is not None:
         for line in merged_lines:
@@ -124,30 +123,29 @@ def process(image):
     print(image.shape)
     height = image.shape[0]
     width = image.shape[1]
-    # Adjust your region of interest if necessary
+   
     region_of_interest_vertices = [
         (0, height),  # Bottom left
         (width, height),  # Bottom right
-        (width, height*0.8),  # Middle right (halfway up the image)
-        (width*0.5, height*0.5),  # Middle center (a bit lower than the middle)
-        (0, height*0.8),  # Middle left (halfway up the image)
+        (width, height*0.8),  # Middle right
+        (width*0.5, height*0.5),  # Middle center 
+        (0, height*0.8),  # Middle left 
     ]
     gray_image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
     
-    # Debug: Visualize the gray image
-    cv2.imshow('Gray Image', gray_image)
+    
+    #cv2.imshow('Gray Image', gray_image)
     
     canny_image = cv2.Canny(gray_image, 80, 100)
     
-    # Debug: Visualize the Canny image
-    cv2.imshow('Canny Image', canny_image)
+ 
+    #cv2.imshow('Canny Image', canny_image)
     
     cropped_image = region_of_interest(
         canny_image,
         np.array([region_of_interest_vertices], np.int32),
     )
     
-    # Debug: Visualize the Cropped image
     mask = np.zeros_like(image)
     cv2.fillPoly(mask, np.array([region_of_interest_vertices], np.int32), (255,) * image.shape[2])
     masked_image = cv2.bitwise_and(image, mask)
@@ -193,7 +191,7 @@ while True:
         for box in boxes:
 
             x1, y1, x2, y2 = box.xyxy[0]
-            x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2) # convert to int values
+            x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
 
             center_x = int((x1 + x2)/2)
             center_y = int((y1 + y2)/2)
